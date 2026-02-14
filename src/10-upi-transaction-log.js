@@ -48,4 +48,72 @@
  */
 export function analyzeUPITransactions(transactions) {
   // Your code here
+  if(!Array.isArray(transactions) || transactions.length <= 0) {
+    return null;
+  }
+
+  let type = ["credit", "debit"];
+
+  let positiveAmountTransaction = transactions.filter((item) => item.amount > 0);
+  let filteredTransaction = positiveAmountTransaction.filter((item) => type.includes(item.type));
+  if(filteredTransaction.length === 0) {
+    return null;
+  }
+
+  let totalCredit = filteredTransaction.reduce((acc, item) => {
+    if(item.type === "credit") {
+      return acc + item.amount;
+    }
+    return acc;
+  }, 0);
+
+  let totalDebit = filteredTransaction.reduce((acc, item) => {
+    if(item.type === "debit") {
+      return acc + item.amount;
+    }
+    return acc;
+  }, 0);
+
+  let netBalance = totalCredit - totalDebit;
+
+  let transactionCount = filteredTransaction.length;
+
+  let avgTransaction = Math.round((totalCredit + totalDebit) / transactionCount);
+
+  let highestTransaction = filteredTransaction.reduce((acc, item) => acc.amount > item.amount ? acc : item, {});
+
+  let categoryBreakdown = filteredTransaction.reduce((acc, item) => {
+    if(acc[item.category]) {
+      acc[item.category] += item.amount;
+    } else {
+      acc[item.category] = item.amount;
+    }
+    return acc;
+  }, {});
+
+  // let frequentContact = filteredTransaction.reduce((acc, item) => {
+  //   if(acc[item.to]) {
+  //     acc[item.to] += 1;
+  //   } else {
+  //     acc[item.to] = 1;
+  //   }
+  //   acc = Math.max(acc[item.to]);
+  //   return acc.to;
+  // }, "");
+
+  let frequency = filteredTransaction.reduce((acc, item) => {
+    if(acc[item.to]) {
+      acc[item.to] += 1;
+    } else {
+      acc[item.to] = 1
+    }
+    return acc;
+  }, {});
+  let frequentContact = Object.keys(frequency).reduce((acc, item) => frequency[item] > frequency[acc] ? item : acc);
+
+  let allAbove100 = filteredTransaction.every((item) => item.amount > 100);
+
+  let hasLargeTransaction = filteredTransaction.some((item) => item.amount >= 5000);
+
+  return {totalCredit: totalCredit, totalDebit: totalDebit, netBalance: netBalance, transactionCount: transactionCount, avgTransaction: avgTransaction, highestTransaction: highestTransaction, categoryBreakdown: categoryBreakdown, frequentContact: frequentContact, allAbove100: allAbove100, hasLargeTransaction: hasLargeTransaction};
 }

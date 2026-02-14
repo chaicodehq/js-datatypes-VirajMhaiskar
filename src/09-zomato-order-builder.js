@@ -47,4 +47,84 @@
  */
 export function buildZomatoOrder(cart, coupon) {
   // Your code here
+  if(!Array.isArray(cart) || cart.length <= 0) {
+    return null;
+  }
+
+  let processedItems = cart.filter((item) => item.qty > 0).map((item) => {
+    let addonTotal = (item.addons || []).reduce((sum, addon) => {
+      let price = parseFloat(addon.split(":")[1]) || 0;
+      return sum + price;
+    }, 0);
+
+    let itemTotal = (item.price + addonTotal) * item.qty;
+
+    return {name: item.name, qty: item.qty, basePrice: item.price, addonTotal: addonTotal, itemTotal: itemTotal};
+  });
+
+  if(processedItems.length === 0) {
+    return null;
+  }
+
+  let subTotal = processedItems.reduce((acc, item) => acc + item.itemTotal, 0);
+
+  let deliveryFee = 30;
+  if(subTotal >= 1000) {
+    deliveryFee = 0;
+  } else if(subTotal >= 500) {
+    deliveryFee = 15;
+  }
+
+  let gst = parseFloat((subTotal * 0.05).toFixed(2));
+
+  let discount = 0;
+  let couponCode = coupon ? coupon.toUpperCase() : null;
+
+  if(couponCode === "FIRST50") {
+    discount = Math.min(subTotal * 0.5, 150);
+  } else if(couponCode === "FLAT100") {
+    discount = 100;
+  } else if(couponCode === "FREESHIP") {
+    discount = deliveryFee;
+    deliveryFee = 0;
+  }
+
+  const totalCalculated = parseFloat((subTotal + deliveryFee + gst - discount).toFixed(2));
+  const grandTotal = totalCalculated <= 0 ? 0 : totalCalculated;
+
+  return {items: processedItems, subtotal: subTotal, deliveryFee: deliveryFee, gst: gst, discount: discount, grandTotal: grandTotal};
+  // let couponCode = typeof coupon !== "string" ? null : coupon.toLowerCase();
+
+  // let subtotal = cart.reduce((acc, item) => {
+  //   console.log(item.addons);
+  //   let addonTotal = (item.addons || []).reduce((sum, addon) => sum + Number(addon.split(":")[1]), 0);
+  //   console.log(addonTotal);
+  //   return acc + (item.price + addonTotal) * item.qty;
+  // }, 0);
+
+  // let deliveryFee;
+  // if(subtotal < 500) {
+  //   deliveryFee = 30;
+  // } else if(subtotal>= 500 && subtotal <= 999) {
+  //   deliveryFee = 15;
+  // } else {
+  //   deliveryFee = 0;
+  // }
+
+  // let gst = parseFloat((subtotal * 0.05).toFixed(2));
+
+  // let discount = 0;
+  // if(couponCode === "first50") {
+  //   discount = Math.min(subtotal * 0.5, 150);
+  // } else if(couponCode === "flat100") {
+  //   discount = 100;
+  // } else if(couponCode === "freeship") {
+  //   discount = deliveryFee;
+  //   deliveryFee = 0;
+  // }
+
+  // let finalTotal = parseFloat((subtotal + deliveryFee + gst - discount).toFixed(2));
+  // let grandTotal = finalTotal < 0 ? 0 : finalTotal;
+  // return {subtotal: subtotal, deliveryFee: deliveryFee, gst: gst, discount: discount, grandTotal: grandTotal};
+
 }

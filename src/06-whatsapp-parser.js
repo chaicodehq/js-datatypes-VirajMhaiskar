@@ -40,4 +40,59 @@
  */
 export function parseWhatsAppMessage(message) {
   // Your code here
+  if(typeof message !== "string" || !message.includes("-") || !message.includes(": ")) {
+    return null;
+  }
+
+  /* I WROTE THIS CODE BUT THE APPROACH WAS VERY POOR SO I ASKED CHATGPT AND IT GAVE ME THE CODE WHICH IS NOT COMMENTED ONLY FOR PARSING DATA.
+    let dateArray = message.split(",", 1);
+    let date = dateArray[0];
+    
+    let timeArray = message.split("-", 1);
+    let timeString = timeArray[0];
+    let splitTime = timeString.split(",");
+    let time = splitTime[1];
+
+    let senderArray = message.split(": ", 1);
+    let senderString = senderArray[0];
+    let senderArray2 = senderString.split("-");
+    let sender = senderArray2[1];
+
+    let messageArray = message.split(": ");
+    let receivedMessage = messageArray[1];
+  */
+
+  let parts = message.split("-");
+
+  let dateTimePart = parts[0];
+  let senderMessagePart = parts[1];
+
+  let dateTime = dateTimePart.split(",");
+  let date = dateTime[0];
+  let time = dateTime[1];
+
+  let senderMessage = senderMessagePart.split(": ");
+  let sender = senderMessage[0];
+  let messageReceived = senderMessage[1];
+  let messageWord = messageReceived.split(" ");
+  let messageWordCount = messageWord.length;
+
+  let lowerReceivedMessage = messageReceived.toLowerCase();
+
+  let loveSentiment = lowerReceivedMessage.includes("❤") || lowerReceivedMessage.includes("love") || lowerReceivedMessage.includes("pyaar");
+  let funnySentiment = lowerReceivedMessage.includes("😂") || lowerReceivedMessage.includes("haha") || lowerReceivedMessage.includes(":)");
+
+  let sentiment;
+  if(loveSentiment && funnySentiment) {
+    sentiment = "funny";
+  } else if(loveSentiment) {
+    sentiment = "love";
+  } else if(funnySentiment){
+    sentiment = "funny";
+  } else {
+    sentiment = "neutral";
+  }
+
+  return {date: date, time: time.trim(), sender: sender.trim(), text: messageReceived, wordCount: messageWordCount, sentiment: sentiment}
+  
 }
